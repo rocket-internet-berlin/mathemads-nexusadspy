@@ -135,10 +135,11 @@ class AppnexusClient():
         try:
             username = os.environ['USERNAME_NEXUSADSPY']
             password = os.environ['PASSWORD_NEXUSADSPY']
-        except KeyError:
+        except KeyError as e:
             raise NexusadspyConfigurationError(
                 'Set environment variables "USERNAME_NEXUSADSPY" and '
-                '"PASSWORD_NEXUSADSPY" appropriately.'
+                '"PASSWORD_NEXUSADSPY" appropriately. '
+                'You failed to set: "{}".'.format(e.args[0])
             )
 
         data = {'auth': {'username': username, 'password': password}}
