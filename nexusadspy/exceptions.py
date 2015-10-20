@@ -6,5 +6,13 @@ from __future__ import (
 )
 
 
-class AppnexusError(Exception):
+class NexusadspyError(Exception):
+    pass
+
+
+class NexusadspyAPIError(NexusadspyError):
+    pass
+
+
+class NexusadspyConfigurationError(NexusadspyError):
     pass

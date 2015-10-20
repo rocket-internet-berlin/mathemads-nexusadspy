@@ -11,7 +11,7 @@ from urllib.parse import urlencode, urljoin
 import json
 import logging
 
-from nexusadspy.exceptions import AppnexusError
+from nexusadspy.exceptions import NexusadspyAPIError, NexusadspyConfigurationError
 
 import requests
 
@@ -132,8 +132,14 @@ class AppnexusClient():
             return auth['token']
 
     def _get_new_auth_token(self):
-        username = os.environ['USERNAME_NEXUSADSPY']
-        password = os.environ['PASSWORD_NEXUSADSPY']
+        try:
+            username = os.environ['USERNAME_NEXUSADSPY']
+            password = os.environ['PASSWORD_NEXUSADSPY']
+        except KeyError:
+            raise NexusadspyConfigurationError(
+                'Set environment variables "USERNAME_NEXUSADSPY" and '
+                '"PASSWORD_NEXUSADSPY" appropriately.'
+            )
 
         data = {'auth': {'username': username, 'password': password}}
         headers = {'Content-type': 'application/json; charset=UTF-8'}
@@ -146,6 +152,6 @@ class AppnexusClient():
 
     def _check_response(self, response):
         if response.get('error_id') is not None:
-            raise AppnexusError(response.get('error_id'),
-                                response.get('error'),
-                                response.get('error_description'))
+            raise NexusadspyAPIError(response.get('error_id'),
+                                     response.get('error'),
+                                     response.get('error_description'))
