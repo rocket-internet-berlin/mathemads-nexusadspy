@@ -86,7 +86,10 @@ class AppnexusClient():
         no_fail = 0
         while True:
             r = requests.request(method, url, params=params, data=data, headers=headers)
-            assert r.status_code == 200
+
+            if r.status_code != 200:
+                raise NexusadspyAPIError(r.json())
+
             r = r.json()['response']
 
             if no_fail < max_failures and r.get('error_code', '') == 'RATE_EXCEEDED':
