@@ -19,12 +19,12 @@ import requests
 logging.basicConfig(level=logging.INFO)
 
 
-class AppnexusService():
+class AppnexusClient():
     endpoint = 'https://api.appnexus.com'
 
     def __init__(self, path):
         self.path = path
-        self.logger = logging.getLogger('AppnexusService')
+        self.logger = logging.getLogger('AppnexusClient')
 
     def request(self, service, method, data=None, headers=None):
         """
