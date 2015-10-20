@@ -53,6 +53,9 @@ class AppnexusClient():
         else:
             res = self._do_throttled_request(url, method, data, headers)
 
+        if not isinstance(res, list):
+            res = [res]
+
         return res
 
     def _do_paged_get(self, url, method, data=None, headers=None,
