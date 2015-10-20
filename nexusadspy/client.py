@@ -28,10 +28,13 @@ class AppnexusClient():
 
     def request(self, service, method, data=None, headers=None):
         """
+        Sends a request to the Appnexus API. Handles authentication, paging, and throttling.
 
-        :param query: dict
-        :param field: str
-        :return: pandas Dataframe
+        :param service: str, One of the services Appnexus services (https://wiki.appnexus.com/display/api/API+Services).
+        :param method: str, HTTP method to be used. One of 'GET', 'POST', 'PUT', or 'DELETE'.
+        :param data: dict (optional), Any data to be sent in the request.
+        :param headers: dict (optional), Any HTTP headers to be sent in the request.
+        :return: list, List of response dictionaries.
         """
         method = method.lower()
         service = service.lower()
