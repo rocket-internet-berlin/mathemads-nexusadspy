@@ -36,7 +36,12 @@ class AppnexusClient():
         method = method.lower()
         service = service.lower()
 
-        assert method in ['get', 'post', 'put', 'delete']
+        if method not in ['get', 'post', 'put', 'delete']:
+            raise ValueError(
+                'Argument "method" must be one of '
+                '["get", "post", "put", "delete"]. '
+                'You supplied: "{}".'.format(method)
+            )
 
         url = urljoin(base=self.endpoint, url=service)
 
