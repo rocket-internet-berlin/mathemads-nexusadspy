@@ -11,7 +11,7 @@ from urllib.parse import urlencode, urljoin
 import json
 import logging
 
-from nexusadspy.exceptions import AppnexusError
+from nexusadspy.exceptions import NexusadspyAPIError, NexusadspyConfigurationError
 
 import requests
 
@@ -19,24 +19,32 @@ import requests
 logging.basicConfig(level=logging.INFO)
 
 
-class AppnexusService():
+class AppnexusClient():
     endpoint = 'https://api.appnexus.com'
 
     def __init__(self, path):
         self.path = path
-        self.logger = logging.getLogger('AppnexusService')
+        self.logger = logging.getLogger('AppnexusClient')
 
     def request(self, service, method, data=None, headers=None):
         """
+        Sends a request to the Appnexus API. Handles authentication, paging, and throttling.
 
-        :param query: dict
-        :param field: str
-        :return: pandas Dataframe
+        :param service: str, One of the services Appnexus services (https://wiki.appnexus.com/display/api/API+Services).
+        :param method: str, HTTP method to be used. One of 'GET', 'POST', 'PUT', or 'DELETE'.
+        :param data: dict (optional), Any data to be sent in the request.
+        :param headers: dict (optional), Any HTTP headers to be sent in the request.
+        :return: list, List of response dictionaries.
         """
         method = method.lower()
         service = service.lower()
 
-        assert method in ['get', 'post', 'put', 'delete']
+        if method not in ['get', 'post', 'put', 'delete']:
+            raise ValueError(
+                'Argument "method" must be one of '
+                '["get", "post", "put", "delete"]. '
+                'You supplied: "{}".'.format(method)
+            )
 
         url = urljoin(base=self.endpoint, url=service)
 
@@ -44,6 +52,9 @@ class AppnexusService():
             res = self._do_paged_get(url, method, data, headers)
         else:
             res = self._do_throttled_request(url, method, data, headers)
+
+        if not isinstance(res, list):
+            res = [res]
 
         return res
 
@@ -86,7 +97,10 @@ class AppnexusService():
         no_fail = 0
         while True:
             r = requests.request(method, url, params=params, data=data, headers=headers)
-            assert r.status_code == 200
+
+            if r.status_code != 200:
+                raise NexusadspyAPIError(r.json())
+
             r = r.json()['response']
 
             if no_fail < max_failures and r.get('error_code', '') == 'RATE_EXCEEDED':
@@ -132,8 +146,15 @@ class AppnexusService():
             return auth['token']
 
     def _get_new_auth_token(self):
-        username = os.environ['USERNAME_NEXUSADSPY']
-        password = os.environ['PASSWORD_NEXUSADSPY']
+        try:
+            username = os.environ['USERNAME_NEXUSADSPY']
+            password = os.environ['PASSWORD_NEXUSADSPY']
+        except KeyError as e:
+            raise NexusadspyConfigurationError(
+                'Set environment variables "USERNAME_NEXUSADSPY" and '
+                '"PASSWORD_NEXUSADSPY" appropriately. '
+                'You failed to set: "{}".'.format(e.args[0])
+            )
 
         data = {'auth': {'username': username, 'password': password}}
         headers = {'Content-type': 'application/json; charset=UTF-8'}
@@ -146,6 +167,6 @@ class AppnexusService():
 
     def _check_response(self, response):
         if response.get('error_id') is not None:
-            raise AppnexusError(response.get('error_id'),
-                                response.get('error'),
-                                response.get('error_description'))
+            raise NexusadspyAPIError(response.get('error_id'),
+                                     response.get('error'),
+                                     response.get('error_description'))
