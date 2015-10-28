@@ -49,9 +49,11 @@ class AppnexusClient():
         url = urljoin(base=self.endpoint, url=service)
 
         if method == 'get':
-            res = self._do_paged_get(url, method, data, headers)
+            res_code, res = self._do_paged_get(url, method, data, headers)
         else:
-            res = self._do_throttled_request(url, method, data, headers)
+            res_code, res = self._do_authenticated_request(url, method, data, headers)
+
+        self._check_response(res_code, res)
 
         if not isinstance(res, list):
             res = [res]
@@ -73,7 +75,7 @@ class AppnexusClient():
             data.update({'start_element': start_element,
                          'batch_size': batch_size})
 
-            r = self._do_authenticated_request(url, method, data, headers)
+            r_code, r = self._do_authenticated_request(url, method, data, headers)
 
             output_term = r['dbg_info']['output_term']
             for item in r[output_term]:
@@ -88,42 +90,49 @@ class AppnexusClient():
             if max_items is not None and len(res) >= max_items:
                 break
 
-        return res
+        return r_code, res
 
     def _do_throttled_request(self, url, method, data=None, headers=None,
                               sec_sleep=2., max_failures=100):
-        params = urlencode(data)
+        params = self._get_params(method, data)
         data = json.dumps(data)
         no_fail = 0
         while True:
             r = requests.request(method, url, params=params, data=data, headers=headers)
+            r_code = r.status_code
 
-            if r.status_code != 200:
-                raise NexusadspyAPIError(r.json())
-
-            r = r.json()['response']
+            try:
+                r = r.json()['response']
+            except json.JSONDecodeError:
+                import ipdb; ipdb.set_trace()
+                self._check_response(r_code, {})
 
             if no_fail < max_failures and r.get('error_code', '') == 'RATE_EXCEEDED':
                 no_fail += 1
                 time.sleep(sec_sleep**no_fail)
                 continue
 
-            self._check_response(r)
+            return r_code, r
 
-            return r
+    @staticmethod
+    def _get_params(method, data):
+        if method.lower() == 'get':
+            return urlencode(data)
+        else:
+            return None
 
     def _do_authenticated_request(self, url, method, data=None, headers=None):
         headers = headers or {}
         headers.update({'Authorization': self._get_auth_token()})
 
         while True:
-            r = self._do_throttled_request(url, method, data, headers)
+            r_code, r = self._do_throttled_request(url, method, data, headers)
 
-            if r.get('error_code', '') == 'NOAUTH':
+            if r.get('error_id', '') == 'NOAUTH':
                 headers.update({'Authorization': self._get_auth_token(overwrite=True)})
                 continue  # retry with new authorization token
 
-            return r
+            return r_code, r
 
     def _get_auth_token(self, overwrite=False):
         if overwrite:
@@ -165,8 +174,9 @@ class AppnexusClient():
 
         return token
 
-    def _check_response(self, response):
-        if response.get('error_id') is not None:
-            raise NexusadspyAPIError(response.get('error_id'),
+    def _check_response(self, response_code, response, ):
+        if response.get('error_id') is not None or response_code != 200:
+            raise NexusadspyAPIError('Response status code: "{}"'.format(response_code),
+                                     response.get('error_id'),
                                      response.get('error'),
                                      response.get('error_description'))
