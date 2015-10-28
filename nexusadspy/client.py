@@ -104,7 +104,6 @@ class AppnexusClient():
             try:
                 r = r.json()['response']
             except json.JSONDecodeError:
-                import ipdb; ipdb.set_trace()
                 self._check_response(r_code, {})
 
             if no_fail < max_failures and r.get('error_code', '') == 'RATE_EXCEEDED':
