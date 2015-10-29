@@ -2,12 +2,14 @@
 
 A thin Python wrapper on top of the Appnexus API.
 
-## Example
+## Examples
 
 Set your developer username and password in the environment:
 
     $ export USERNAME_NEXUSADSPY="..."
     $ export PASSWORD_NEXUSADSPY="..."
+
+### Sample API service query
 
 Pick one of the Appnexus services to interact with off
 [this list](https://wiki.appnexus.com/display/api/API+Services).
@@ -24,3 +26,39 @@ To download data on just one of your advertisers, simply pass their ID
 in the request:
 
     r = client.request('advertiser', 'GET', data={'id': 123456})
+
+### Sample reporting query
+
+In the following example we set up an `attributed_conversions` report
+over the past month for the advertiser with the ID `123456`.
+
+    from nexusadspy import AppnexusReport
+
+    columns = ["datetime",
+               "pixel_name",
+               "pixel_id",
+               "post_click_or_post_view_conv",
+               "line_item_name",
+               "line_item_id",
+               "campaign_id",
+               "imp_time",
+               "advertiser_id"]
+
+    report_type = "attributed_conversions"
+
+    filters = [{"imp_type_id":{"operator":"!=","value": 6}}]
+
+    report = AppnexusReport(advertiser_ids=123456,
+						    report_interval='month_to_date',
+                            filters=filters,
+                            report_type=report_type,
+                            columns=columns)
+
+To trigger and download the report just run the `get` method on your `report`:
+
+    output_json = report.get()
+
+In case you have `pandas` installed you can also request the report as a
+dataframe as follows:
+
+    output_df = report.get(format_='pandas')
