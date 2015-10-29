@@ -122,7 +122,7 @@ class AppnexusClient():
 
             if no_fail < max_failures and r.get('error_code', '') == 'RATE_EXCEEDED':
                 no_fail += 1
-                time.sleep(sec_sleep**no_fail)
+                time.sleep(sec_sleep ** no_fail)
                 continue
 
             return r_code, r
