@@ -61,14 +61,13 @@ class AppnexusReport():
         return report
 
     def _post_request(self, client):
-        data = json.dumps(self.request)
-        response = client.request(self.endpoint, 'POST', data=data)
+        response = client.request(self.endpoint, 'POST', data=self.request)
 
-        return response
+        return response[0]
 
     def _get_report(self, client, report_id):
         response = self._poll_and_wait(client, report_id)
-        download_url = response['report']['url']
+        download_url = response['url']
         report = self._download_report(client, download_url)
 
         return report
@@ -76,9 +75,10 @@ class AppnexusReport():
     def _poll_and_wait(self, client, report_id):
         response = {}
         for retry in range(self.max_retries):
-            data = json.dumps({'id': report_id})
-            response = client.request(self.endpoint, 'GET', data=data)
+            data = {'id': report_id}
+            response = client.request(self.endpoint, 'GET', data=data, get_field='execution_status')[0]
             if response['execution_status'] == 'ready':
+                response = client.request(self.endpoint, 'GET', data=data, get_field='report')
                 break
             else:
                 time.sleep(self.retry_seconds**retry)
@@ -88,17 +88,17 @@ class AppnexusReport():
                                      'Last response was "{}".'.format(report_id,
                                                                       response))
 
-        return response
+        return response[0]  # both GET requests are short ones, so only one page
 
     @staticmethod
-    def __convert_to_dataframe(report):
+    def _convert_to_dataframe(report):
         import pandas as pd
 
-        return pd.from_json(report)
+        return pd.DataFrame(report)
 
     @staticmethod
     def _download_report(client, download_url):
-        report = client.request(download_url, 'GET')
+        report = client.request(download_url, 'GET', get_field='report')
 
         return report
 
