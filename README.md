@@ -49,7 +49,7 @@ over the past month for the advertiser with the ID `123456`.
     filters = [{"imp_type_id":{"operator":"!=","value": 6}}]
 
     report = AppnexusReport(advertiser_ids=123456,
-						    report_interval='month_to_date',
+                            report_interval='month_to_date',
                             filters=filters,
                             report_type=report_type,
                             columns=columns)
