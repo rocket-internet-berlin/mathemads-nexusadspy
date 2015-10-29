@@ -10,9 +10,9 @@ setup(
     name='nexusadspy',
     version='0.1.0',
     description='Thin wrapper around AppNexus API',
-    author='Daniel Olel, Georg Waltherg',
+    author='Daniel Olel, Georg Walther',
     author_email='daniel.olel@rocket-internet.com, '
-                 'georg.waltherg@rocket-internet.com',
+                 'georg.walther@rocket-internet.com',
     url='https://github.com/rocket-om/open_nexusadspy',
     packages=['nexusadspy'],
     package_dir={'nexusadspy': 'nexusadspy'},
