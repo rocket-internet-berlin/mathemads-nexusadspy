@@ -19,6 +19,24 @@ class AppnexusReport():
                  advertiser_ids=None, publisher_ids=None,
                  credentials_path='.appnexus_auth.json',
                  max_retries=100, retry_seconds=2.):
+        """
+        AppNexus reporting class.
+
+        :param report_type: str
+        :param columns: list
+        :param timezone: str
+        :param filters: list
+        :param groups: list
+        :param start_date: str
+        :param end_date: str
+        :param report_interval: str
+        :param advertiser_ids: int
+        :param publisher_ids: int
+        :param credentials_path: str
+        :param max_retries: int
+        :param retry_seconds: float
+        :return:
+        """
 
         if not isinstance(columns, list):
             raise ValueError('"columns" is expected as a list, you '
@@ -45,6 +63,7 @@ class AppnexusReport():
 
     def get(self, format_='json'):
         """
+        Trigger and download the report.
 
         :param format_: optional, Specify 'pandas' to get report as a DataFrame.
         :return:
