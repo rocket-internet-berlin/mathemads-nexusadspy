@@ -8,13 +8,19 @@ from __future__ import (
 from collections import defaultdict
 import os
 import time
-from urllib.parse import urlencode, urljoin
 import json
 import logging
 
+import requests
+
+try:
+    from urllib.parse import urlencode, urljoin
+except ImportError:
+    from urlparse import urljoin
+    from urllib import urlencode
+
 from nexusadspy.exceptions import NexusadspyAPIError, NexusadspyConfigurationError
 
-import requests
 
 
 logging.basicConfig(level=logging.INFO)
@@ -137,13 +143,13 @@ class AppnexusClient():
     @staticmethod
     def _convert_csv_to_dict(csv_bytestr, field):
         s = csv_bytestr.decode('utf-8')
-        headings, *rows = s.split('\r\n')
+        headings, rows = s.split('\r\n')[0], s.split('\r\n')[1:]
         headings = [h.strip() for h in headings.split(',')]
         rows = (r for r in rows if len(r) > 0)
         rows = (r.split(',') for r in rows)
         rows = [[el.strip() for el in r] for r in rows]
 
-        res = [{h: v for h, v in zip(headings, row)} for row in rows]
+        res = [dict(zip(headings, row)) for row in rows]
 
         return {field: res}
 
