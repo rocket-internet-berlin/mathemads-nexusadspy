@@ -16,7 +16,3 @@ class NexusadspyAPIError(NexusadspyError):
 
 class NexusadspyConfigurationError(NexusadspyError):
     pass
-
-
-class NexusadspyFileNotFoundError(NexusadspyError):
-    pass

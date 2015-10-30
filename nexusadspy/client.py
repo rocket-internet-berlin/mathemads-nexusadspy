@@ -22,7 +22,7 @@ except ImportError:
 try:
     import FileNotFoundError
 except ImportError as err:
-    from nexusadspy.exceptions import NexusadspyFileNotFoundError as FileNotFoundError
+    FileNotFoundError = IOError
 
 
 from nexusadspy.exceptions import NexusadspyAPIError, NexusadspyConfigurationError
@@ -124,11 +124,9 @@ class AppnexusClient():
             r = requests.request(method, url, params=params, data=data, headers=headers)
             r_code = r.status_code
 
-            import simplejson
-
             try:
                 r = r.json()['response']
-            except simplejson.scanner.JSONDecodeError:
+            except (KeyError, ValueError):
                 if len(r.content) > 0:
                     r = self._convert_csv_to_dict(r.content, get_field)
                 else:
@@ -182,7 +180,7 @@ class AppnexusClient():
 
         try:
             token = self._get_cached_auth_token()
-        except (FileNotFoundError, IOError):
+        except FileNotFoundError:
             token = self._get_new_auth_token()
             self._cache_auth_token(token)
         return token
