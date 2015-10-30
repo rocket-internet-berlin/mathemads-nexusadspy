@@ -157,7 +157,7 @@ class AppnexusClient():
         rows = (r.split(',') for r in rows)
         rows = [[el.strip() for el in r] for r in rows]
 
-        res = [dict(zip(headings, row)) for row in rows]
+        res = [{h: v for h, v in zip(headings, row)} for row in rows]
 
         return {field: res}
 
