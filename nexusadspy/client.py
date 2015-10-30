@@ -19,6 +19,12 @@ except ImportError:
     from urlparse import urljoin
     from urllib import urlencode
 
+try:
+    import FileNotFoundError
+except ImportError as err:
+    from nexusadspy.exceptions import NexusadspyFileNotFoundError as FileNotFoundError
+
+
 from nexusadspy.exceptions import NexusadspyAPIError, NexusadspyConfigurationError
 
 
@@ -118,9 +124,11 @@ class AppnexusClient():
             r = requests.request(method, url, params=params, data=data, headers=headers)
             r_code = r.status_code
 
+            import simplejson
+
             try:
                 r = r.json()['response']
-            except json.JSONDecodeError:
+            except simplejson.scanner.JSONDecodeError:
                 if len(r.content) > 0:
                     r = self._convert_csv_to_dict(r.content, get_field)
                 else:
