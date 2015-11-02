@@ -8,9 +8,19 @@ from __future__ import (
 from collections import defaultdict
 import os
 import time
-from urllib.parse import urlencode, urljoin
 import json
 import logging
+
+try:
+    from urllib.parse import urlencode, urljoin
+except ImportError:
+    from urlparse import urljoin
+    from urllib import urlencode
+
+try:
+    import FileNotFoundError
+except ImportError as err:
+    FileNotFoundError = IOError
 
 from nexusadspy.exceptions import NexusadspyAPIError, NexusadspyConfigurationError
 
@@ -114,7 +124,7 @@ class AppnexusClient():
 
             try:
                 r = r.json()['response']
-            except json.JSONDecodeError:
+            except (KeyError, ValueError):
                 if len(r.content) > 0:
                     r = self._convert_csv_to_dict(r.content, get_field)
                 else:
@@ -137,7 +147,7 @@ class AppnexusClient():
     @staticmethod
     def _convert_csv_to_dict(csv_bytestr, field):
         s = csv_bytestr.decode('utf-8')
-        headings, *rows = s.split('\r\n')
+        headings, rows = s.split('\r\n')[0], s.split('\r\n')[1:]
         headings = [h.strip() for h in headings.split(',')]
         rows = (r for r in rows if len(r) > 0)
         rows = (r.split(',') for r in rows)
@@ -168,7 +178,7 @@ class AppnexusClient():
 
         try:
             token = self._get_cached_auth_token()
-        except (FileNotFoundError, IOError):
+        except FileNotFoundError:
             token = self._get_new_auth_token()
             self._cache_auth_token(token)
         return token
