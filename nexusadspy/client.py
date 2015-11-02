@@ -11,8 +11,6 @@ import time
 import json
 import logging
 
-import requests
-
 try:
     from urllib.parse import urlencode, urljoin
 except ImportError:
@@ -24,9 +22,9 @@ try:
 except ImportError as err:
     FileNotFoundError = IOError
 
-
 from nexusadspy.exceptions import NexusadspyAPIError, NexusadspyConfigurationError
 
+import requests
 
 
 logging.basicConfig(level=logging.INFO)
