@@ -13,7 +13,7 @@ setup(
     author='Daniel Olel, Georg Walther',
     author_email='daniel.olel@rocket-internet.com, '
                  'georg.walther@rocket-internet.com',
-    url='https://github.com/rocket-om/nexusadspy',
+    url='https://github.com/mathemads/nexusadspy',
     packages=['nexusadspy'],
     package_dir={'nexusadspy': 'nexusadspy'},
     package_data={},
