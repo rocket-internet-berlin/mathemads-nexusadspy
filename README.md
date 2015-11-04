@@ -30,8 +30,8 @@ in the request:
 ### Sample reporting query
 
 In the following example we set up an `attributed_conversions` report
-for the period starting 01/Oct/2015 to 01/Nov/2015 
-for the advertiser with the ID `123456`.
+for the period starting on Oct 1, 2015 and ending on Nov 1, 2015 
+for the advertiser with ID `123456`.
 
     from nexusadspy import AppnexusReport
 
