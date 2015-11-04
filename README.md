@@ -30,7 +30,8 @@ in the request:
 ### Sample reporting query
 
 In the following example we set up an `attributed_conversions` report
-over the past month for the advertiser with the ID `123456`.
+for the period starting on Oct 1, 2015 and ending on Nov 1, 2015 
+for the advertiser with ID `123456`.
 
     from nexusadspy import AppnexusReport
 
@@ -49,7 +50,8 @@ over the past month for the advertiser with the ID `123456`.
     filters = [{"imp_type_id":{"operator":"!=","value": 6}}]
 
     report = AppnexusReport(advertiser_ids=123456,
-                            report_interval='month_to_date',
+                            start_date='2015-10-01',
+                            end_date='2015-11-01',
                             filters=filters,
                             report_type=report_type,
                             columns=columns)
