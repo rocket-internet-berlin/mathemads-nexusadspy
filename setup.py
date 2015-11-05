@@ -21,7 +21,7 @@ setup(
     zip_safe=False,
     keywords='nexuadspy appnexus api python',
     classifiers=[
-        'Development Status :: In Beta',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
