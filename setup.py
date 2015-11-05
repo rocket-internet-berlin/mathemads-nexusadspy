@@ -14,6 +14,7 @@ setup(
     author_email='daniel.olel@rocket-internet.com, '
                  'georg.walther@rocket-internet.com',
     url='https://github.com/mathemads/nexusadspy',
+    download_url='https://github.com/mathemads/nexusadspy/tarball/master',
     packages=['nexusadspy'],
     package_dir={'nexusadspy': 'nexusadspy'},
     package_data={},
@@ -21,7 +22,7 @@ setup(
     zip_safe=False,
     keywords='nexuadspy appnexus api python',
     classifiers=[
-        'Development Status :: In Beta',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
