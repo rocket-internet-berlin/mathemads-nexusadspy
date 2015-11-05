@@ -2,6 +2,10 @@
 
 A thin Python wrapper on top of the Appnexus API.
 
+## Installation
+
+    pip install nexusadspy
+
 ## Examples
 
 Set your developer username and password in the environment:
