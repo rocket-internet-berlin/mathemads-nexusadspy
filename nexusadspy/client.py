@@ -139,9 +139,9 @@ class AppnexusClient():
 
     @staticmethod
     def _get_params(method, data):
-        if method.lower() == 'get':
+        try:
             return urlencode(data)
-        else:
+        except TypeError:
             return None
 
     @staticmethod
