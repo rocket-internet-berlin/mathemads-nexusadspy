@@ -89,7 +89,6 @@ class AppnexusClient():
 
             r_code, r = self._do_authenticated_request(url, method, data, headers,
                                                        get_field=get_field)
-
             output_term = get_field or r['dbg_info']['output_term']
             output = r[output_term]
             if isinstance(output, list):
@@ -103,7 +102,7 @@ class AppnexusClient():
             start_element += batch_size
 
             count = int(r.get('count', 0))
-            if len(res) >= count:
+            if count - start_element < 1:
                 break
 
             if max_items is not None and len(res) >= max_items:
@@ -165,7 +164,6 @@ class AppnexusClient():
         while True:
             r_code, r = self._do_throttled_request(url, method, data, headers,
                                                    get_field=get_field)
-
             if r.get('error_id', '') == 'NOAUTH':
                 headers.update({'Authorization': self._get_auth_token(overwrite=True)})
                 continue  # retry with new authorization token
