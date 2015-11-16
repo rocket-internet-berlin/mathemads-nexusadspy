@@ -103,7 +103,7 @@ class AppnexusClient():
             start_element += batch_size
 
             count = int(r.get('count', 0))
-            if len(res) >= count:
+            if len(res[output_term]) >= count:
                 break
 
             if max_items is not None and len(res) >= max_items:
