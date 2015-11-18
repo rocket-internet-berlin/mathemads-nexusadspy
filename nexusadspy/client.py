@@ -37,12 +37,14 @@ class AppnexusClient():
         self.path = path
         self.logger = logging.getLogger('AppnexusClient')
 
-    def request(self, service, method, data=None, headers=None, get_field=None):
+    def request(self, service, method, data=None, params=None, headers=None,
+                get_field=None):
         """
         Sends a request to the Appnexus API. Handles authentication, paging, and throttling.
 
         :param service: str, One of the services Appnexus services (https://wiki.appnexus.com/display/api/API+Services).
         :param method: str, HTTP method to be used. One of 'GET', 'POST', 'PUT', or 'DELETE'.
+        :param params: dict (optional), any data to be sent along in url
         :param data: dict (optional), Any data to be sent in the request.
         :param headers: dict (optional), Any HTTP headers to be sent in the request.
         :return: list, List of response dictionaries.
@@ -60,9 +62,12 @@ class AppnexusClient():
         url = urljoin(base=self.endpoint, url=service)
 
         if method == 'get':
-            res_code, res = self._do_paged_get(url, method, data, headers, get_field=get_field)
+            res_code, res = self._do_paged_get(url, method, data, headers,
+                                               get_field=get_field)
         else:
-            res_code, res = self._do_authenticated_request(url, method, data, headers)
+            res_code, res = self._do_authenticated_request(url, method, data,
+                                                           params=params,
+                                                           headers=headers)
 
         self._check_response(res_code, res)
 
@@ -89,7 +94,6 @@ class AppnexusClient():
 
             r_code, r = self._do_authenticated_request(url, method, data, headers,
                                                        get_field=get_field)
-
             output_term = get_field or r['dbg_info']['output_term']
             output = r[output_term]
             if isinstance(output, list):
@@ -114,8 +118,13 @@ class AppnexusClient():
         return r_code, res
 
     def _do_throttled_request(self, url, method, data=None, headers=None,
-                              sec_sleep=2., max_failures=100, get_field=None):
-        params = self._get_params(method, data)
+                              params=None, sec_sleep=2., max_failures=100,
+                              get_field=None):
+        if params is not None:
+            params = self._get_params(method, params)
+        else:
+            params = self._get_params(method, data)
+
         data = json.dumps(data)
         no_fail = 0
         while True:
@@ -157,13 +166,14 @@ class AppnexusClient():
 
         return {field: res}
 
-    def _do_authenticated_request(self, url, method, data=None, headers=None,
-                                  get_field=None):
+    def _do_authenticated_request(self, url, method, data=None, params=None,
+                                  headers=None, get_field=None):
         headers = headers or {}
         headers.update({'Authorization': self._get_auth_token()})
 
         while True:
             r_code, r = self._do_throttled_request(url, method, data, headers,
+                                                   params=params,
                                                    get_field=get_field)
 
             if r.get('error_id', '') == 'NOAUTH':
