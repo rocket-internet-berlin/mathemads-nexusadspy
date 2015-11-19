@@ -44,7 +44,7 @@ class AppnexusClient():
 
         :param service: str, One of the services Appnexus services (https://wiki.appnexus.com/display/api/API+Services).
         :param method: str, HTTP method to be used. One of 'GET', 'POST', 'PUT', or 'DELETE'.
-        :param params: dict (optional), any data to be sent along in url
+        :param params: dict (optional), Any data to be sent in URL as parameters.
         :param data: dict (optional), Any data to be sent in the request.
         :param headers: dict (optional), Any HTTP headers to be sent in the request.
         :return: list, List of response dictionaries.
