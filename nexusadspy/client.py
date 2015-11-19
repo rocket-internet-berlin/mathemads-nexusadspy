@@ -62,8 +62,8 @@ class AppnexusClient():
         url = urljoin(base=self.endpoint, url=service)
 
         if method == 'get':
-            res_code, res = self._do_paged_get(url, method, data, headers,
-                                               get_field=get_field)
+            res_code, res = self._do_paged_get(url, method, params, data,
+                                               headers, get_field=get_field)
         else:
             res_code, res = self._do_authenticated_request(url, method, data,
                                                            params=params,
@@ -76,10 +76,10 @@ class AppnexusClient():
 
         return res
 
-    def _do_paged_get(self, url, method, data=None, headers=None,
+    def _do_paged_get(self, url, method, params=None, data=None, headers=None,
                       start_element=None, batch_size=None, max_items=None,
                       get_field=None):
-
+        params = params or {}
         data = data or {}
         res = defaultdict(list)
 
@@ -92,7 +92,8 @@ class AppnexusClient():
             data.update({'start_element': start_element,
                          'batch_size': batch_size})
 
-            r_code, r = self._do_authenticated_request(url, method, data, headers,
+            r_code, r = self._do_authenticated_request(url, method, data,
+                                                       params, headers,
                                                        get_field=get_field)
             output_term = get_field or r['dbg_info']['output_term']
             output = r[output_term]
@@ -120,10 +121,6 @@ class AppnexusClient():
     def _do_throttled_request(self, url, method, data=None, headers=None,
                               params=None, sec_sleep=2., max_failures=100,
                               get_field=None):
-        if params is not None:
-            params = self._get_params(method, params)
-        else:
-            params = self._get_params(method, data)
 
         data = json.dumps(data)
         no_fail = 0
