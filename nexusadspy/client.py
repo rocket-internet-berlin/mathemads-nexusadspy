@@ -52,6 +52,9 @@ class AppnexusClient():
         method = method.lower()
         service = service.lower()
 
+        params = params or {}
+        data = data or {}
+
         if method not in ['get', 'post', 'put', 'delete']:
             raise ValueError(
                 'Argument "method" must be one of '
@@ -81,8 +84,6 @@ class AppnexusClient():
     def _do_paged_get(self, url, method, params=None, data=None, headers=None,
                       start_element=None, batch_size=None, max_items=None,
                       get_field=None):
-        params = params or {}
-        data = data or {}
         res = defaultdict(list)
 
         if start_element is None:
