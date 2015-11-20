@@ -125,7 +125,6 @@ class AppnexusClient():
                               sec_sleep=2., max_failures=100,
                               get_field=None):
 
-        data = json.dumps(data)
         no_fail = 0
         while True:
             r = requests.request(method, url, params=params, data=data, headers=headers)
