@@ -210,7 +210,7 @@ class AppnexusClient():
         headers = {'Content-type': 'application/json; charset=UTF-8'}
         url = urljoin(base=self.endpoint, url='auth')
 
-        r_code, r = self._do_throttled_request(url, 'post', data, headers)
+        r_code, r = self._do_throttled_request(url, 'post', data=data, headers=headers)
         token = r['token']
 
         return token
