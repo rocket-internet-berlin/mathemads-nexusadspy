@@ -147,13 +147,6 @@ class AppnexusClient():
             return r_code, r
 
     @staticmethod
-    def _get_params(method, data):
-        try:
-            return urlencode(data)
-        except TypeError:
-            return None
-
-    @staticmethod
     def _convert_csv_to_dict(csv_bytestr, field):
         s = csv_bytestr.decode('utf-8')
         headings, rows = s.split('\r\n')[0], s.split('\r\n')[1:]
