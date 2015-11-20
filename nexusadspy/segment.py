@@ -7,45 +7,10 @@ from __future__ import (
 from nexusadspy.client import AppnexusClient
 from io import BytesIO
 from gzip import GzipFile
+import time
 
 
-class MemberOfSegment:
-    """
-    Class to hold attributes about the user to be added in segment.
-    """
-    def __init__(self,appnexus_user_id, timestamp, mobile_os=None, expiration=0, numeric_value=0):
-        """
-        Detailed documentation about values can be found here:
-        https://wiki.appnexus.com/display/api/Batch+Segment+Service+-+File+Format
-        :param appnexus_user_id: str, Appnexus ID of the user. IDFA/AAID in case of mobiles.
-        :param timestamp: int, Unix timestamp at which user goes into effect in segment.
-        :param mobile_os: str, mobile OS used by user. None if desktop.
-        :param expiration: int, Lifetime of user in segment (e.g. android, ios). 0 means never expire.
-        :param numeric_value: int, Numeric value for the user.
-        """
-        self._user_id = appnexus_user_id
-        self._expiration = expiration
-        self._timestamp = timestamp
-        self._numeric_value = numeric_value
-        self._mobile_os = mobile_os
-
-    def get_user_id(self):
-        return self._user_id
-
-    def get_timestamp(self):
-        return self._timestamp
-
-    def get_expiration(self):
-        return self._expiration
-
-    def get_value(self):
-        return self._numeric_value
-
-    def get_mobile_os(self):
-        return self._mobile_os
-
-
-class SegmentsUploaderJob:
+class SegmentsUploader:
     """
     batch-upload API wrapper for appnexus
     """
@@ -57,7 +22,13 @@ class SegmentsUploaderJob:
                  credentials_path='.appnexus_auth.json'):
         """
         Initialize the uploader
-        :param users_list: list, List of MemberOfSegment. Users to be added in segment.
+        :param users_list: list, List of MemberOfSegment. Users to be added in segment. Every member should be a dict
+        with fields
+            -uid: Appnexus user ID. AAID/IDFS in case of mobile
+            -timestamp: Timestamp when user entered the segment
+            -expiration (optional): Expiration timestamp for the user. Default 0.
+            -value (optional): Numerical value for the segment. Default 0.
+            -mobile_os (optional): OS used by the user. Considered to be desktop if absent.
         :param segment_code: str, Segment code to add users in.
         :param separators: array, Array of five field separators. As documented in 
         https://wiki.appnexus.com/display/api/Batch+Segment+Service+-+File+Format#BatchSegmentService-FileFormat-Separators
@@ -72,10 +43,24 @@ class SegmentsUploaderJob:
         self._member_id = member_id
         self._job_id = None
 
-    def initialize_upload(self):
+    def upload(self, polling_duration_sec=2):
         """
-        Start upload job for the segment.
+        Initiate segment upload task
+        :param polling_duration_sec: int, Time to sleep while polling for status
+        :return: tuple, with two values, number of valid users and invalid users
         """
+        valid_user_count = invalid_user_count = 0
+        self._initialize_upload()
+        while True:
+            time.sleep(polling_duration_sec)
+            job_status = self._get_job_status_response()
+            if job_status[0].get('phase') == 'completed':
+                valid_user_count = job_status[0]['batch_segment_upload_job']['num_valid_user']
+                invalid_user_count = job_status[0]['batch_segment_upload_job']['num_invalid_user']
+                break
+        return valid_user_count, invalid_user_count
+
+    def _initialize_upload(self):
         upload_buffer = self._get_buffer_for_upload()
         service_endpoint = 'batch-segment?member_id={}'.format(self._member_id)
         response = self._appnexus_client.request(service_endpoint, "POST")
@@ -83,28 +68,6 @@ class SegmentsUploaderJob:
         upload_url = response[0]['batch_segment_upload_job']['upload_url']
         headers = {'Content-Type': 'application/octet-stream'}
         self._appnexus_client.request(upload_url, 'POST', data=upload_buffer.read(), endpoint='', headers=headers)
-
-    def has_upload_completed(self):
-        """
-        Check status of upload job
-        :return: bool, True if it's completed. False otherwise.
-        """
-        completed = False
-        if self._job_id is not None:
-            response = self._get_job_status_response()
-            if response[0].get('phase') == 'completed':
-                completed = True
-        return completed
-
-    def get_acceptance_status(self):
-        """
-        Returns status of the job.
-        :return: Tuple of two as (valid users, invalid users). (0, 0) for incomplete job.
-        """
-        response = self._get_job_status_response()
-        valid_user_count = response[0]['batch_segment_upload_job']['num_valid_user']
-        invalid_user_count = response[0]['batch_segment_upload_job']['num_invalid_user']
-        return valid_user_count, invalid_user_count
 
     def _get_job_status_response(self):
         status_endpoint = 'batch-segment?member_id={}&job_id={}'.format(self._member_id, self._job_id)
@@ -121,16 +84,17 @@ class SegmentsUploaderJob:
         return compressed_buffer
 
     def _get_upload_string_for_user(self, user):
-        upload_string = str(user.get_user_id()) + self._separators[0]
+        upload_string = str(user["uid"]) + self._separators[0]
         upload_string += str(self._segment_code) + self._separators[2]
-        upload_string += str(user.get_expiration()) + self._separators[2]
-        upload_string += str(user.get_timestamp()) + self._separators[2]
-        upload_string += str(user.get_value())
-        if user.get_mobile_os() is not None:
-            if user.get_mobile_os().lower() == 'android':
+        upload_string += str(user.get("expiration", 0)) + self._separators[2]
+        upload_string += str(user["timestamp"]) + self._separators[2]
+        upload_string += str(user.get("value", 0))
+        user_mobile_os = user.get("mobile_os")
+        if user_mobile_os is not None:
+            if user_mobile_os.lower() == 'android':
                 # Appnexus bug: AAID should be uploaded as both IDFA and AAID. Otherwise it cannot be used in mopub.
                 upload_string = upload_string + self._separators[4] + self.BATCH_UPLOAD_ANDROID_SPECIFIER +\
                     "\n" + upload_string + self._separators[4] + self.BATCH_UPLOAD_IOS_SPECIFIER
-            else:
+            elif user_mobile_os.lower() == 'ios':
                 upload_string = upload_string + self._separators[4] + self.BATCH_UPLOAD_IOS_SPECIFIER
         return upload_string
