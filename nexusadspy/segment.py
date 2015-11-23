@@ -4,16 +4,15 @@ from __future__ import (
     absolute_import, unicode_literals
 )
 
-from nexusadspy.client import AppnexusClient
 from io import BytesIO
 from gzip import GzipFile
 import time
+import logging
+
+from nexusadspy.client import AppnexusClient
 
 
 class SegmentsUploader:
-    """
-    batch-upload API wrapper for appnexus
-    """
 
     BATCH_UPLOAD_ANDROID_SPECIFIER = "8"
     BATCH_UPLOAD_IOS_SPECIFIER = "3"
@@ -21,9 +20,8 @@ class SegmentsUploader:
     def __init__(self, users_list, segment_code, separators, member_id,
                  credentials_path='.appnexus_auth.json'):
         """
-        Initialize the uploader
-        :param users_list: list, List of MemberOfSegment. Users to be added in segment. Every member should be a dict
-        with fields
+        Initialize batch-upload API wrapper for appnexus.
+        :param users_list: list, List of dictionaries representing appnexus users. Every member should have fields
             -uid: Appnexus user ID. AAID/IDFS in case of mobile
             -timestamp: Timestamp when user entered the segment
             -expiration (optional): Expiration timestamp for the user. Default 0.
@@ -36,12 +34,13 @@ class SegmentsUploader:
         :param credentials_path: str, Credentials path for AppnexusClient.
         :return:
         """
-        self._appnexus_client = AppnexusClient(credentials_path)
+        self._credentials_path = credentials_path
         self._users_list = users_list
         self._segment_code = segment_code  # Appnexus bug: Segment upload batch API does not work with segment IDs
         self._separators = separators
         self._member_id = member_id
         self._job_id = None
+        self.logger = logging.getLogger('AppnexusClient.segment')
 
     def upload(self, polling_duration_sec=2):
         """
@@ -50,33 +49,34 @@ class SegmentsUploader:
         :return: tuple, with two values, number of valid users and invalid users
         """
         valid_user_count = invalid_user_count = 0
-        self._initialize_upload()
+        api_client = AppnexusClient(self._credentials_path)
+        self._initialize_upload(api_client)
         while True:
             time.sleep(polling_duration_sec)
-            job_status = self._get_job_status_response()
+            job_status = self._get_job_status_response(api_client)
             if job_status[0].get('phase') == 'completed':
                 valid_user_count = job_status[0]['batch_segment_upload_job']['num_valid_user']
                 invalid_user_count = job_status[0]['batch_segment_upload_job']['num_invalid_user']
                 break
         return valid_user_count, invalid_user_count
 
-    def _initialize_upload(self):
+    def _initialize_upload(self, api_client):
         upload_buffer = self._get_buffer_for_upload()
         service_endpoint = 'batch-segment?member_id={}'.format(self._member_id)
-        response = self._appnexus_client.request(service_endpoint, "POST")
+        response = api_client.request(service_endpoint, 'POST')
         self._job_id = response[0]['batch_segment_upload_job']['job_id']
         upload_url = response[0]['batch_segment_upload_job']['upload_url']
         headers = {'Content-Type': 'application/octet-stream'}
-        self._appnexus_client.request(upload_url, 'POST', data=upload_buffer.read(), endpoint='', headers=headers)
+        api_client.request(upload_url, 'POST', data=upload_buffer.read(), endpoint='', headers=headers)
 
-    def _get_job_status_response(self):
+    def _get_job_status_response(self, api_client):
         status_endpoint = 'batch-segment?member_id={}&job_id={}'.format(self._member_id, self._job_id)
-        headers = {u'Content-Type': u'application/octet-stream'}
-        return self._appnexus_client.request(status_endpoint, "GET", headers=headers)
+        headers = {'Content-Type': 'application/octet-stream'}
+        return api_client.request(status_endpoint, "GET", headers=headers)
 
     def _get_buffer_for_upload(self):
         upload_string = '\n'.join(self._get_upload_string_for_user(user) for user in self._users_list)
-        print(upload_string)
+        self.logger.debug("Attempting to upload \n" + upload_string)
         compressed_buffer = BytesIO()
         with GzipFile(fileobj=compressed_buffer, mode="wb") as compressor:
             compressor.write(upload_string)
