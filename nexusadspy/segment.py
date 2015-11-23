@@ -39,10 +39,9 @@ class AppnexusSegmentsUploader:
         self._segment_code = segment_code  # Appnexus bug: Segment upload batch API does not work with segment IDs
         self._separators = separators
         self._member_id = member_id
-        self._job_id = None
         self._logger = logging.getLogger('nexusadspy.AppnexusSegmentBatchUpload')
 
-    def upload(self, polling_duration_sec=2):
+    def upload(self, polling_duration_sec=2, max_retries=10):
         """
         Initiate segment upload task
         :param polling_duration_sec: int, Time to sleep while polling for status
@@ -50,27 +49,31 @@ class AppnexusSegmentsUploader:
         """
         valid_user_count = invalid_user_count = 0
         api_client = AppnexusClient(self._credentials_path)
-        self._initialize_upload(api_client)
-        while True:
+        job_id, upload_url = self._initialize_job(api_client)
+        self._upload_batch_to_url(api_client, upload_url)
+        for attempt in range(max_retries):
             time.sleep(polling_duration_sec)
-            job_status = self._get_job_status_response(api_client)
+            job_status = self._get_job_status_response(api_client, job_id)
             if job_status[0].get('phase') == 'completed':
                 valid_user_count = job_status[0]['batch_segment_upload_job']['num_valid_user']
                 invalid_user_count = job_status[0]['batch_segment_upload_job']['num_invalid_user']
                 break
         return valid_user_count, invalid_user_count
 
-    def _initialize_upload(self, api_client):
-        upload_buffer = self._get_buffer_for_upload()
+    def _initialize_job(self, api_client):
         service_endpoint = 'batch-segment?member_id={}'.format(self._member_id)
         response = api_client.request(service_endpoint, 'POST')
-        self._job_id = response[0]['batch_segment_upload_job']['job_id']
+        job_id = response[0]['batch_segment_upload_job']['job_id']
         upload_url = response[0]['batch_segment_upload_job']['upload_url']
+        return job_id, upload_url
+
+    def _upload_batch_to_url(self, api_client, upload_url):
+        upload_buffer = self._get_buffer_for_upload()
         headers = {'Content-Type': 'application/octet-stream'}
         api_client.request(upload_url, 'POST', data=upload_buffer.read(), endpoint='', headers=headers)
 
-    def _get_job_status_response(self, api_client):
-        status_endpoint = 'batch-segment?member_id={}&job_id={}'.format(self._member_id, self._job_id)
+    def _get_job_status_response(self, api_client, job_id):
+        status_endpoint = 'batch-segment?member_id={}&job_id={}'.format(self._member_id, job_id)
         headers = {'Content-Type': 'application/octet-stream'}
         return api_client.request(status_endpoint, 'GET', headers=headers)
 
