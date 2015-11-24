@@ -44,7 +44,8 @@ class AppnexusSegmentsUploader:
     def upload(self, polling_duration_sec=2, max_retries=10):
         """
         Initiate segment upload task
-        :param polling_duration_sec: int, Time to sleep while polling for status
+        :param polling_duration_sec: int, Time to sleep while polling for status.
+        :param max_retries: int, Max number of polling retires to be done.
         :return: tuple, with two values, number of valid users and invalid users
         """
         valid_user_count = invalid_user_count = 0
