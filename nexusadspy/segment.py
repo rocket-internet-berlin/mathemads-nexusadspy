@@ -56,8 +56,8 @@ class AppnexusSegmentsUploader:
             time.sleep(polling_duration_sec)
             job_status = self._get_job_status_response(api_client, job_id)
             if job_status[0].get('phase') == 'completed':
-                valid_user_count = job_status[0]['batch_segment_upload_job']['num_valid_user']
-                invalid_user_count = job_status[0]['batch_segment_upload_job']['num_invalid_user']
+                valid_user_count = job_status[0].get('num_valid_user')
+                invalid_user_count = job_status[0].get('num_invalid_user')
                 break
         return valid_user_count, invalid_user_count
 
@@ -71,7 +71,7 @@ class AppnexusSegmentsUploader:
     def _upload_batch_to_url(self, api_client, upload_url):
         upload_buffer = self._get_buffer_for_upload()
         headers = {'Content-Type': 'application/octet-stream'}
-        api_client.request(upload_url, 'POST', data=upload_buffer.read(), endpoint='', headers=headers)
+        api_client.request(upload_url, 'POST', data=upload_buffer.read(), prepend_endpoint=False, headers=headers)
 
     def _get_job_status_response(self, api_client, job_id):
         status_endpoint = 'batch-segment?member_id={}&job_id={}'.format(self._member_id, job_id)
