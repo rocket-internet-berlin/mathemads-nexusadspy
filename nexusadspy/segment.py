@@ -20,17 +20,17 @@ class AppnexusSegmentsUploader:
     def __init__(self, users_list, segment_code, separators, member_id,
                  credentials_path='.appnexus_auth.json'):
         """
-        Batch-upload API wrapper for appnexus.
-        :param users_list: list, List of dictionaries representing appnexus users. Every member should have fields
-            - uid: Appnexus user ID. AAID/IDFS in case of mobile
-            - timestamp: POSIX Timestamp when user entered the segment
+        Batch-upload API wrapper for AppNexus.
+        :param users_list: list, List of dictionaries representing AppNexus users. Every member should have fields
+            - uid: AppNexus user ID. AAID/IDFS in case of mobile.
+            - timestamp: POSIX timestamp when user entered the segment.
             - expiration (optional): Expiration timestamp for the user. A POSIX timestamp. Default 0.
             - value (optional): Numerical value for the segment. Default 0.
             - mobile_os (optional): OS used by the user. Considered to be desktop if absent.
         :param segment_code: str, Segment code to add users to.
         :param separators: list, List of five field separators. As documented in
         https://wiki.appnexus.com/display/api/Batch+Segment+Service+-+File+Format#BatchSegmentService-FileFormat-Separators
-        :param member_id: str, Member ID for appnexus account.
+        :param member_id: str, Member ID for AppNexus account.
         :param credentials_path: str, Credentials path for AppnexusClient.
         :return:
         """
@@ -45,8 +45,8 @@ class AppnexusSegmentsUploader:
         """
         Initiate segment upload task
         :param polling_duration_sec: int, Time to sleep while polling for status.
-        :param max_retries: int, Max number of polling retires to be done.
-        :return: tuple, with two values, number of valid users and invalid users
+        :param max_retries: int, Max number of polling retries to be done.
+        :return: tuple, Tuple with two values, number of valid users and invalid users.
         """
         valid_user_count = invalid_user_count = 0
         api_client = AppnexusClient(self._credentials_path)
