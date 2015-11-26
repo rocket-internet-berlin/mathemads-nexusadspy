@@ -95,8 +95,11 @@ class AppnexusReport():
         response = {}
         for retry in range(self.max_retries):
             data = {'id': report_id}
-            response = client.request(self.endpoint, 'GET', data=data, get_field='execution_status')[0]
-            if response['execution_status'] == 'ready':
+            response = client.request(self.endpoint, 'GET', data=data)[0]
+            execution_status = response.get(
+                'execution_status', response['reports'][0]['execution_status']
+            )
+            if execution_status == 'ready':
                 response = client.request(self.endpoint, 'GET', data=data, get_field='report')
                 break
             else:
