@@ -1,0 +1,29 @@
+sudo: false
+
+notifications:
+  - email: false
+
+language: python
+
+os:
+  - linux
+
+python:
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+
+install:
+  - pip install -r requirements.txt
+  - pip install pytest pytest-cov flake8 coveralls
+
+before_script:
+  - flake8 --show-source .
+
+script:
+  - py.test --cov=nexusadspy .
+
+after_success:
+  - coveralls
