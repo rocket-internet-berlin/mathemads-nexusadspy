@@ -12,10 +12,9 @@ import json
 import logging
 
 try:
-    from urllib.parse import urlencode, urljoin
+    from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
-    from urllib import urlencode
 
 try:
     import FileNotFoundError
