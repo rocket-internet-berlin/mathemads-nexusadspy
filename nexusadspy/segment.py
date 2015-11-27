@@ -39,7 +39,7 @@ class AppnexusSegmentsUploader:
         self._segment_code = segment_code  # Appnexus bug: Segment upload batch API does not work with segment IDs
         self._separators = separators
         self._member_id = member_id
-        self._logger = logging.getLogger('nexusadspy.AppnexusSegmentBatchUpload')
+        self._logger = logging.getLogger('nexusadspy.segment')
 
     def upload(self, polling_duration_sec=2, max_retries=10):
         """
