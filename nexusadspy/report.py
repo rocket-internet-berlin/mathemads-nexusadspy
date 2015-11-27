@@ -7,7 +7,6 @@ from __future__ import (
 
 from datetime import datetime
 import time
-import json
 
 from nexusadspy import AppnexusClient
 from nexusadspy.exceptions import NexusadspyAPIError
