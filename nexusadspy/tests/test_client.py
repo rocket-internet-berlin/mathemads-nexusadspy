@@ -18,5 +18,5 @@ def test_failure_no_credentials():
         os.environ['USERNAME_NEXUSADSPY']
         os.environ['PASSWORD_NEXUSADSPY']
     except KeyError:
-        with pytest.raises(NexusadspyConfigurationError) as excinfo:
+        with pytest.raises(NexusadspyConfigurationError):
             AppnexusClient('.appnexus_auth.json')
