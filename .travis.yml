@@ -1,0 +1,30 @@
+sudo: false
+
+language: python
+
+os:
+  - linux
+  - osx
+
+python:
+  - "2.6"
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.5-dev"
+  - "nightly"
+
+install:
+  - pip install -r requirements.txt
+  - pip install pytest pytest-cov flake8 coveralls
+
+before_script:
+  - flake8 .
+
+script:
+  - py.test --cov=nexusadspy .
+
+after_success:
+  - coveralls
