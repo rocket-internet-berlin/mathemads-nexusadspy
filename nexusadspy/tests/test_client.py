@@ -20,4 +20,3 @@ def test_failure_no_credentials():
     except KeyError:
         with pytest.raises(NexusadspyConfigurationError) as excinfo:
             AppnexusClient('.appnexus_auth.json')
-            assert 'set environment variables' in str(excinfo.value.lower())
