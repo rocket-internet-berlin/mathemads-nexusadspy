@@ -2,6 +2,10 @@
 
 A thin Python wrapper on top of the Appnexus API.
 
+## Status
+
+[![Build Status](https://travis-ci.org/mathemads/nexusadspy.svg)](https://travis-ci.org/mathemads/nexusadspy)
+
 ## Installation
 
     pip install nexusadspy
