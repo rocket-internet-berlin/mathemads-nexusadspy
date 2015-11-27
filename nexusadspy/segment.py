@@ -31,7 +31,7 @@ class AppnexusSegmentsUploader:
         :param separators: list, List of five field separators. As documented in
         https://wiki.appnexus.com/display/api/Batch+Segment+Service+-+File+Format#BatchSegmentService-FileFormat-Separators
         :param member_id: str, Member ID for AppNexus account.
-        :param credentials_path: str, Credentials path for AppnexusClient.
+        :param credentials_path: str (optional), Credentials path for AppnexusClient. Defaults to '.appnexus_auth.json'.
         :return:
         """
         self._credentials_path = credentials_path
@@ -44,8 +44,8 @@ class AppnexusSegmentsUploader:
     def upload(self, polling_duration_sec=2, max_retries=10):
         """
         Initiate segment upload task
-        :param polling_duration_sec: int, Time to sleep while polling for status.
-        :param max_retries: int, Max number of polling retries to be done.
+        :param polling_duration_sec: int (optional), Time to sleep while polling for status. Defaults to 2.
+        :param max_retries: int (optional), Max number of polling retries to be done. Defaults to 10.
         :return: tuple, Tuple with two values, number of valid users and invalid users.
         """
         valid_user_count = invalid_user_count = 0
