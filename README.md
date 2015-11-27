@@ -72,3 +72,30 @@ In case you have `pandas` installed you can also request the report as a
 dataframe as follows:
 
     output_df = report.get(format_='pandas')
+
+### Sample segments upload
+
+In the following example, we upload a list of users to user segment `my_segment_code`
+using the [batch segment upload service](https://wiki.appnexus.com/display/api/Batch+Segment+Service).
+We assume that the segment `my_segment_code` has already been created in the corresponding account.
+The respective users also need to be pixelled on AppNexus from your website before they can be added to segments.
+
+    from nexusadspy.segment import AppnexusSegmentsUploader
+
+    # List of five separators obtained from Appnexus support
+    my_separators_list = [':',';','^','~',',']
+
+    seg_code = "my_segment_code"
+    my_member_id = "1234"
+
+    members = [
+        {"uid": "0123456789012345678", "timestamp": "1447952642"},
+        {"uid": "9876543210987654321", "timestamp": "1447921128"},
+        {"uid": "1122334455667788990", "timestamp": "1447914439"}
+    ]
+
+    uploader = AppnexusSegmentsUploader(members, seg_code, my_spearators_list, my_member_id)
+
+To trigger the upload, run `upload()` method on `uploader`:
+
+    upload_status = uploader.upload()
