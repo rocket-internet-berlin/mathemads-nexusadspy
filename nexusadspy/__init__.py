@@ -7,3 +7,4 @@ from __future__ import (
 
 from .client import AppnexusClient
 from .report import AppnexusReport
+from .segment import AppnexusSegmentsUploader
