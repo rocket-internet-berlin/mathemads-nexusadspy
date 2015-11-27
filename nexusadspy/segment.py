@@ -24,7 +24,7 @@ class AppnexusSegmentsUploader:
         :param users_list: list, List of dictionaries representing AppNexus users. Every member should have fields
             - uid: AppNexus user ID. AAID/IDFS in case of mobile.
             - timestamp: POSIX timestamp when user entered the segment.
-            - expiration (optional): Expiration timestamp for the user. A POSIX timestamp. Defaults  to 0.
+            - expiration (optional): Expiration timestamp for the user. A POSIX timestamp. Defaults to 0.
             - value (optional): Numerical value for the segment. Defaults to 0.
             - mobile_os (optional): OS used by the user. Considered internally by AppNexus to be desktop if absent.
         :param segment_code: str, Segment code to add users to.
