@@ -96,8 +96,10 @@ class AppnexusClient():
             r_code, r = self._do_authenticated_request(url, method, params=params,
                                                        data=data, headers=headers,
                                                        get_field=get_field)
+
             output_term = get_field or r['dbg_info']['output_term']
-            output = r[output_term]
+            output = r.get(output_term, r)
+
             if isinstance(output, list):
                 res[output_term] += output  # assume list of dictionaries
             else:
