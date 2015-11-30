@@ -5,6 +5,7 @@ A thin Python wrapper on top of the Appnexus API.
 ## Status
 
 [![Build Status](https://travis-ci.org/mathemads/nexusadspy.svg)](https://travis-ci.org/mathemads/nexusadspy)
+[![Coverage Status](https://coveralls.io/repos/mathemads/nexusadspy/badge.svg?branch=devel&service=github)](https://coveralls.io/github/mathemads/nexusadspy?branch=devel)
 
 ## Installation
 
