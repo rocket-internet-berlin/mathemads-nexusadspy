@@ -6,7 +6,6 @@ from __future__ import (
 )
 
 import pytest
-from mock import patch
 
 from nexusadspy import AppnexusReport
 
