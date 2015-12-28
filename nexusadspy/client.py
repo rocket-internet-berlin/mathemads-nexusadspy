@@ -12,10 +12,9 @@ import json
 import logging
 
 try:
-    from urllib.parse import urlencode, urljoin
+    from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
-    from urllib import urlencode
 
 try:
     import FileNotFoundError
@@ -38,7 +37,7 @@ class AppnexusClient():
         self.logger = logging.getLogger('AppnexusClient')
 
     def request(self, service, method, params=None, data=None, headers=None,
-                get_field=None):
+                get_field=None, prepend_endpoint=True):
         """
         Sends a request to the Appnexus API. Handles authentication, paging, and throttling.
 
@@ -50,7 +49,6 @@ class AppnexusClient():
         :return: list, List of response dictionaries.
         """
         method = method.lower()
-        service = service.lower()
 
         params = params or {}
         data = data or {}
@@ -62,7 +60,7 @@ class AppnexusClient():
                 'You supplied: "{}".'.format(method)
             )
 
-        url = urljoin(base=self.endpoint, url=service)
+        url = urljoin(base=self.endpoint, url=service) if prepend_endpoint else service
 
         if method == 'get':
             res_code, res = self._do_paged_get(url, method, params=params,
@@ -98,8 +96,10 @@ class AppnexusClient():
             r_code, r = self._do_authenticated_request(url, method, params=params,
                                                        data=data, headers=headers,
                                                        get_field=get_field)
+
             output_term = get_field or r['dbg_info']['output_term']
-            output = r[output_term]
+            output = r.get(output_term, r)
+
             if isinstance(output, list):
                 res[output_term] += output  # assume list of dictionaries
             else:

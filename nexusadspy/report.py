@@ -7,7 +7,6 @@ from __future__ import (
 
 from datetime import datetime
 import time
-import json
 
 from nexusadspy import AppnexusClient
 from nexusadspy.exceptions import NexusadspyAPIError
@@ -85,9 +84,8 @@ class AppnexusReport():
         return response[0]
 
     def _get_report(self, client, report_id):
-        response = self._poll_and_wait(client, report_id)
-        download_url = response['url']
-        report = self._download_report(client, download_url)
+        self._poll_and_wait(client, report_id)  # block until report ready
+        report = self._download_report(client, report_id)
 
         return report
 
@@ -95,8 +93,9 @@ class AppnexusReport():
         response = {}
         for retry in range(self.max_retries):
             data = {'id': report_id}
-            response = client.request(self.endpoint, 'GET', data=data, get_field='execution_status')[0]
-            if response['execution_status'] == 'ready':
+            response = client.request(self.endpoint, 'GET', data=data)[0]
+            execution_status = self._get_report_execution_status(response, report_id)
+            if execution_status == 'ready':
                 response = client.request(self.endpoint, 'GET', data=data, get_field='report')
                 break
             else:
@@ -107,7 +106,19 @@ class AppnexusReport():
                                      'Last response was "{}".'.format(report_id,
                                                                       response))
 
-        return response[0]  # both GET requests are short ones, so only one page
+    @staticmethod
+    def _get_report_execution_status(response, report_id):
+        try:
+            return response['execution_status']
+        except KeyError:
+            report = AppnexusReport._get_report_dict(response['reports'], report_id)
+            return report['execution_status']
+
+    @staticmethod
+    def _get_report_dict(reports, report_id):
+        for report in reports:
+            if report['id'] == report_id:
+                return report
 
     @staticmethod
     def _convert_to_dataframe(report):
@@ -116,8 +127,9 @@ class AppnexusReport():
         return pd.DataFrame(report)
 
     @staticmethod
-    def _download_report(client, download_url):
-        report = client.request(download_url, 'GET', get_field='report')
+    def _download_report(client, report_id):
+        report = client.request('report-download', 'GET', get_field='report',
+                                params={'id': report_id})
 
         return report
 
