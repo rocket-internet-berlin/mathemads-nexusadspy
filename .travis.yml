@@ -16,13 +16,10 @@ python:
 
 install:
   - pip install -r requirements.txt
-  - pip install pytest pytest-cov flake8 coveralls
+  - pip install pytest pytest-cov flake8
 
 before_script:
   - flake8 --show-source .
 
 script:
   - py.test --cov=nexusadspy .
-
-after_success:
-  - coveralls
