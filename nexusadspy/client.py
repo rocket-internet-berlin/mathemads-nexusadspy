@@ -37,7 +37,7 @@ class AppnexusClient():
         self.logger = logging.getLogger('AppnexusClient')
 
     def request(self, service, method, params=None, data=None, headers=None,
-                get_field=None, prepend_endpoint=True):
+                get_field=None, prepend_endpoint=True, paged_get=True):
         """
         Sends a request to the Appnexus API. Handles authentication, paging, and throttling.
 
@@ -62,7 +62,7 @@ class AppnexusClient():
 
         url = urljoin(base=self.endpoint, url=service) if prepend_endpoint else service
 
-        if method == 'get':
+        if method == 'get' and paged_get:
             res_code, res = self._do_paged_get(url, method, params=params,
                                                data=data, headers=headers,
                                                get_field=get_field)
