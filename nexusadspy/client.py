@@ -136,7 +136,11 @@ class AppnexusClient():
                 r = r.json()['response']
             except (KeyError, ValueError):
                 if len(r.content) > 0:
-                    r = self._convert_csv_to_dict(r.content, get_field)
+                    try:
+                        r = self._convert_csv_to_dict(r.content, get_field)
+                    except UnicodeDecodeError:
+                        # non-text response: wrap response contents in dict and return directly.
+                        r = {"data": r.content}
                 else:
                     self._check_response(r_code, {})
 
