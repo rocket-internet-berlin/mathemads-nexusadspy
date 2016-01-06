@@ -14,7 +14,8 @@ from nexusadspy.exceptions import NexusadspyAPIError
 
 class AppnexusReport():
     def __init__(self, report_type, columns, timezone='CET', filters=None,
-                 groups=None, start_date=None, end_date=None, report_interval=None,
+                 groups=None, group_filters=None, start_date=None,
+                 end_date=None, report_interval=None,
                  advertiser_ids=None, publisher_ids=None,
                  credentials_path='.appnexus_auth.json',
                  max_retries=100, retry_seconds=2.):
@@ -25,6 +26,7 @@ class AppnexusReport():
         :param columns: list
         :param timezone: str
         :param filters: list
+        :param group_filters: list
         :param groups: list
         :param start_date: str
         :param end_date: str
@@ -46,6 +48,7 @@ class AppnexusReport():
         self.timezone = timezone
         self.filters = filters or []
         self.groups = groups or []
+        self.group_filters = group_filters or []
         self.start_date = self._format_date(start_date)
         self.end_date = self._format_date(end_date)
         self.report_interval = report_interval
@@ -154,6 +157,7 @@ class AppnexusReport():
         r = self._add_request_date(r)
         r = self._add_request_filters(r)
         r = self._add_request_groups(r)
+        r = self._add_request_group_filters(r)
 
         return r
 
@@ -187,6 +191,11 @@ class AppnexusReport():
 
     def _add_request_groups(self, r):
         r['report']['groups'] = self.groups
+
+        return r
+
+    def _add_request_group_filters(self, r):
+        r['report']['group_filters'] = self.group_filters
 
         return r
 
