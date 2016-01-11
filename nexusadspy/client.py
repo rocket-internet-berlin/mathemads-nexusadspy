@@ -37,7 +37,7 @@ class AppnexusClient():
         self.logger = logging.getLogger('AppnexusClient')
 
     def request(self, service, method, params=None, data=None, headers=None,
-                get_field=None, prepend_endpoint=True):
+                get_field=None, prepend_endpoint=True, max_pages=None):
         """
         Sends a request to the Appnexus API. Handles authentication, paging, and throttling.
 
@@ -65,7 +65,7 @@ class AppnexusClient():
         if method == 'get':
             res_code, res = self._do_paged_get(url, method, params=params,
                                                data=data, headers=headers,
-                                               get_field=get_field)
+                                               get_field=get_field, max_pages=max_pages)
         else:
             res_code, res = self._do_authenticated_request(url, method,
                                                            params=params,
@@ -81,7 +81,7 @@ class AppnexusClient():
 
     def _do_paged_get(self, url, method, params=None, data=None, headers=None,
                       start_element=None, batch_size=None, max_items=None,
-                      get_field=None):
+                      get_field=None, max_pages=None):
         res = defaultdict(list)
 
         if start_element is None:
@@ -89,6 +89,7 @@ class AppnexusClient():
         if batch_size is None:
             batch_size = 100
 
+        pages = 0
         while True:
             data.update({'start_element': start_element,
                          'batch_size': batch_size})
@@ -96,7 +97,7 @@ class AppnexusClient():
             r_code, r = self._do_authenticated_request(url, method, params=params,
                                                        data=data, headers=headers,
                                                        get_field=get_field)
-
+            pages += 1
             output_term = get_field or r['dbg_info']['output_term']
             output = r.get(output_term, r)
 
@@ -115,6 +116,9 @@ class AppnexusClient():
                 break
 
             if max_items is not None and len(res) >= max_items:
+                break
+
+            if max_pages is not None and pages >= max_pages:
                 break
 
         res = res[output_term]
