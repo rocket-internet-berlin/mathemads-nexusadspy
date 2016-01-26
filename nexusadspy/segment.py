@@ -51,6 +51,7 @@ class AppnexusSegmentsUploader:
         valid_user_count = invalid_user_count = 0
         api_client = AppnexusClient(self._credentials_path)
         job_id, upload_url = self._initialize_job(api_client)
+        self._logger.info("Segment upload job ID is {}".format(job_id))
         self._upload_batch_to_url(api_client, upload_url)
         for attempt in range(max_retries):
             time.sleep(polling_duration_sec)
