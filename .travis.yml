@@ -15,7 +15,7 @@ python:
 
 install:
   - pip install -r requirements.txt
-  - pip install pytest pytest-cov flake8 coveralls
+  - pip install pytest pytest-cov flake8 coveralls mock
 
 before_script:
   - flake8 --show-source .

@@ -83,7 +83,7 @@ class AppnexusSegmentsUploader:
         self._logger.debug("Attempting to upload \n" + upload_string)
         compressed_buffer = BytesIO()
         with GzipFile(fileobj=compressed_buffer, mode='wb') as compressor:
-            compressor.write(upload_string)
+            compressor.write(upload_string.encode('UTF-8'))
         compressed_buffer.seek(0)
         return compressed_buffer
 
